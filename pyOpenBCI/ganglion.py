@@ -142,6 +142,7 @@ class GanglionDelegate(DefaultDelegate):
         self.last_values = [0, 0, 0, 0]
         self.last_id = -1
         self.samples = []
+        self.aux = [0, 0, 0]
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     def handleNotification(self, cHandle, data):
@@ -175,6 +176,12 @@ class GanglionDelegate(DefaultDelegate):
                     self.push_sample( [np.append(start_byte, self.last_values)])
 
         elif start_byte >=1 and start_byte <=100:
+            if start_byte % 10 == 1:
+                self.aux[0] == self.decompress_signed('0b{0:08b}'.format(raw_data[-1]))
+            elif start_byte % 10 == 1:
+                self.aux[1] == self.decompress_signed('0b{0:08b}'.format(raw_data[-1]))
+            elif start_byte % 10 == 1:
+                self.aux[2] == self.decompress_signed('0b{0:08b}'.format(raw_data[-1]))
             for byte in raw_data[1:-1]:
                 bit_array.append('0b{0:08b}'.format(byte))
                 deltas = []
@@ -187,7 +194,7 @@ class GanglionDelegate(DefaultDelegate):
                     self.last_values1 = self.last_values - delta1
                     self.last_values = self.last_values1 - delta2
 
-                    self.push_sample([self.last_values1, self.last_values])
+                    self.push_sample([self.last_values1, self.last_values, self.aux])
 
         elif start_byte >=101 and start_byte <=200:
                 for byte in raw_data[1:]:
@@ -207,10 +214,16 @@ class GanglionDelegate(DefaultDelegate):
 
     def push_sample(self, data):
         """Creates a stack with the last ganglion Samples"""
-        for data_arr in data:
-            if len(data_arr) == 5:
-                sample = OpenBCISample(data_arr[0], data_arr[1:], [], self.start_time, 'Ganglion')
-                self.samples.append(sample)
+        if len(data) == 3:
+            for data_arr in data[0:-1]:
+                if len(data_arr) == 5:
+                    sample = OpenBCISample(data_arr[0], data_arr[1:], data[-1], self.start_time, 'Ganglion')
+                    self.samples.append(sample)
+        else:
+            for data_arr in data:
+                if len(data_arr) == 5:
+                    sample = OpenBCISample(data_arr[0], data_arr[1:], [0, 0, 0], self.start_time, 'Ganglion')
+                    self.samples.append(sample)
 
     def getSamples(self):
         """Returns the last OpenBCI Samples in the stack"""

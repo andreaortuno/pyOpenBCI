@@ -22,7 +22,7 @@ if __name__ ==  '__main__':
 
     callback = eval(args.fun)
 
-    if args.board not in ['Cyton', 'CytonDaisy' 'Ganglion', 'Wifi']:
+    if args.board not in ['Cyton', 'CytonDaisy', 'Ganglion', 'Wifi']:
         sys.exit('No Board Selected. You should use Cyton, CytonDaisy, Ganglion, or Wifi. Try: python openbci_interface.py --board Cyton')
     elif args.board == 'Cyton':
         board = OpenBCICyton(port=args.port)
