@@ -234,8 +234,16 @@ class OpenBCICyton(object):
 
     def write_command(self, command):
         """Sends string command to the Cyton board"""
-        self.ser.write(command.encode())
-        time.sleep(0.5)
+        if command == '?':
+            self.ser.write(command.encode())
+            if self.ser.inWaiting():
+                line = ''
+                while '$$$' not in line:
+                    line += self.ser.read().decode('utf-8', errors='replace')
+                print(line)
+        else:
+            self.ser.write(command.encode())
+            time.sleep(0.5)
 
 
     def start_stream(self, callback):
